@@ -1,6 +1,7 @@
 local key = "react-ts-app-template"
 local resourceName = "bd-laptop" -- options:  "bd-laptop"
 local currentResourceName = GetCurrentResourceName()
+local IsAppLoaded = false
 
 -- If the app should be added when the resource starts.
 -- You can also add it as a default app from the bd-laptop config file.
@@ -31,10 +32,11 @@ end)
 --
 
 local function AddApp()
+    if IsAppLoaded then return end
     while GetResourceState(resourceName) ~= "started" do
         Wait(500)
     end
-
+    Wait(1000)
     exports[resourceName]:AddCustomApp({
         id = exports[resourceName]:GetNextFreeId(),
         key = key,
@@ -49,7 +51,13 @@ local function AddApp()
             return true
         end
     })
+    IsAppLoaded = true
 end
+
+CreateThread(function() -- app first load fix
+    Wait(5000)
+    AddApp()
+end)
 
 if addWithResourceStart then
     AddEventHandler("onResourceStart", function(resource)
